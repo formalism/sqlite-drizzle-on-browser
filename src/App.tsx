@@ -1,16 +1,19 @@
 import { useEffect, useState } from 'react'
 // Need to add the diff of https://github.com/sqlite/sqlite-wasm/pull/54 to index.d.ts of @sqlite.org/sqlite-wasm 
 import { sqlite3Worker1Promiser } from '@sqlite.org/sqlite-wasm'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import { SqliteRemoteDatabase, drizzle } from 'drizzle-orm/sqlite-proxy'
 import './App.css'
 import * as schema from './db/schema'
+import { eq, sql } from 'drizzle-orm'
 
 function App() {
-  const [count, setCount] = useState(0)
   const [data, setData] = useState<{id: number, name: string|null}[]>([])
   const [db, setDb] = useState<SqliteRemoteDatabase<typeof schema>>()
+
+  // state for inputs
+  const [id, setId] = useState('')
+  const [name, setName] = useState('')
+  const [q, setQ] = useState('')
 
   const initializeSQLite = async () => {
     try {
@@ -47,6 +50,7 @@ function App() {
         console.error('Failed to create table:', result.result.message)
         return
       }
+      /*
       const result2 = await promiser('exec', {
         sql: 'INSERT INTO test (name) VALUES (?)',
         bind: ['Hello, World!'],
@@ -55,7 +59,7 @@ function App() {
       if (result2.type === 'error') {
         console.error('Failed to insert row:', result2.result.message)
         return
-      }
+      }*/
 
       /* The result row is an array of values, each value representing a column data when the rowMode is 'array'
       const result3 = await promiser('exec', {
@@ -121,31 +125,46 @@ function App() {
       setData(rows)
     })
   }
+  const add = async () => {
+    await db?.insert(schema.test).values({ id: parseInt(id), name: name })
+    setId('')
+    setName('')
+  }
+  const get = async () => {
+    const row = await db?.query.test.findMany({
+      where: eq(schema.test.id, parseInt(id))
+    })
+    if (row && row.length > 0) {
+      setData(row)
+    }
+  }
+  const update = async () => {
+    await db?.update(schema.test).set({ name: name }).where(eq(schema.test.id, parseInt(id)))
+    setId('')
+    setName('')
+  }
+  const query = async () => {
+    const result = await db?.run(sql.raw(`${q}`))
+    console.log(result)
+    // result.rows is an array of arrays, each array representing a row of data
+    // eg. select id,name from test where id>10
+    // -> result.rows = [ [11, 'name11'], [12, 'name12'], ... ]
+  }
 
   return (
     <>
-      <button onClick={select}>Select</button>
+      <button onClick={select}>All</button>
+
+      <input type='text' placeholder='id' value={id} onChange={(ev) => setId(ev.target.value)} />
+      <input type='text' placeholder='name' value={name} onChange={(ev) => setName(ev.target.value)} />
+      <button onClick={add}>Create</button>
+      <button onClick={get}>Get</button>
+      <button onClick={update}>Update</button>
+      <br/>
+      <input type='text' placeholder='SQL' value={q} onChange={(ev) => setQ(ev.target.value)} />
+      <button onClick={query}>Query</button>
+
       { data.map((row) => <div key={row.id}>{row.id}: {row.name}</div>) }
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
     </>
   )
 }
