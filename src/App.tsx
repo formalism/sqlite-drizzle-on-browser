@@ -156,6 +156,28 @@ function App() {
     // -> result.rows = [ [11, 'name11'], [12, 'name12'], ... ]
   }
 
+  const tx = async () => {
+    try {
+      db?.transaction(async (tx) => {
+        await tx.delete(schema.test).where(eq(schema.test.id, 1))
+        await tx.insert(schema.test).values({ id: 9876, name: 'name1' })
+        await tx.rollback() // this throws exception and rollls back...
+      })
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  const tx2 = async () => {
+    try {
+      db?.transaction(async (tx) => {
+        await tx.delete(schema.test).where(eq(schema.test.id, 1))
+        await tx.insert(schema.test).values({ id: 9876, name: 'name1' })
+      })
+    } catch (err) {
+      console.error(err)
+    }
+  }
   return (
     <>
       <button onClick={select}>All</button>
@@ -166,6 +188,9 @@ function App() {
       <button onClick={get}>Get</button>
       <button onClick={update}>Update</button>
       <button onClick={del}>Delete</button>
+
+      <button onClick={tx}>Transaction</button>
+      <button onClick={tx2}>Transaction2</button>
       <br/>
       <input type='text' placeholder='SQL' value={q} onChange={(ev) => setQ(ev.target.value)} />
       <button onClick={query}>Query</button>
