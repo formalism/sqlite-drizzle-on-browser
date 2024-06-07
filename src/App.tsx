@@ -143,6 +143,11 @@ function App() {
     setId('')
     setName('')
   }
+  const del = async () => {
+    await db?.delete(schema.test).where(eq(schema.test.id, parseInt(id)))
+    setId('')
+    setName('')
+  }
   const query = async () => {
     const result = await db?.run(sql.raw(`${q}`))
     console.log(result)
@@ -160,6 +165,7 @@ function App() {
       <button onClick={add}>Create</button>
       <button onClick={get}>Get</button>
       <button onClick={update}>Update</button>
+      <button onClick={del}>Delete</button>
       <br/>
       <input type='text' placeholder='SQL' value={q} onChange={(ev) => setQ(ev.target.value)} />
       <button onClick={query}>Query</button>
