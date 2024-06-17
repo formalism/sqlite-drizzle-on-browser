@@ -1,3 +1,15 @@
+# OPFS + Drizzle ORM + sqlite-wasm
+
+```
+$ npm i
+$ npm run dev
+```
+open Chrome for http://localhost:5173/
+
+SQLite database is stored in OPFS (Origin Private File System).
+
+Connect the SQLite database to [Drizzle ORM](https://orm.drizzle.team/) with [HTTP Proxy](https://orm.drizzle.team/docs/get-started-sqlite#http-proxy) method.
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.

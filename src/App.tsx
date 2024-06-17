@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-// Need to add the diff of https://github.com/sqlite/sqlite-wasm/pull/54 to index.d.ts of @sqlite.org/sqlite-wasm 
+// Need to add the diff of https://github.com/sqlite/sqlite-wasm/pull/54 to index.d.ts of @sqlite.org/sqlite-wasm for the TypeScript to type check
 import { sqlite3Worker1Promiser } from '@sqlite.org/sqlite-wasm'
 import { SqliteRemoteDatabase, drizzle } from 'drizzle-orm/sqlite-proxy'
 import './App.css'
@@ -156,6 +156,7 @@ function App() {
     // -> result.rows = [ [11, 'name11'], [12, 'name12'], ... ]
   }
 
+  // Transaction test (rollback)
   const tx = async () => {
     try {
       db?.transaction(async (tx) => {
@@ -168,6 +169,7 @@ function App() {
     }
   }
 
+  // Transaction test (commit)
   const tx2 = async () => {
     try {
       db?.transaction(async (tx) => {
@@ -180,22 +182,29 @@ function App() {
   }
   return (
     <>
-      <button onClick={select}>All</button>
+      <h1>Data</h1>
+      Table: test (id INTEGER PRIMARY KEY, name TEXT)
+      { data.map((row) => <div key={row.id}>{row.id}: {row.name}</div>) }
 
+      <hr />
       <input type='text' placeholder='id' value={id} onChange={(ev) => setId(ev.target.value)} />
       <input type='text' placeholder='name' value={name} onChange={(ev) => setName(ev.target.value)} />
-      <button onClick={add}>Create</button>
-      <button onClick={get}>Get</button>
-      <button onClick={update}>Update</button>
-      <button onClick={del}>Delete</button>
+      <div>
+        <button onClick={select}>Show All</button>
+        <button onClick={add}>Create</button>
+        <button onClick={get}>Get</button>
+        <button onClick={update}>Update</button>
+        <button onClick={del}>Delete</button>
 
-      <button onClick={tx}>Transaction</button>
-      <button onClick={tx2}>Transaction2</button>
+        <button onClick={tx}>Transaction</button>
+        <button onClick={tx2}>Transaction2</button>
+      </div>
       <br/>
-      <input type='text' placeholder='SQL' value={q} onChange={(ev) => setQ(ev.target.value)} />
-      <button onClick={query}>Query</button>
 
-      { data.map((row) => <div key={row.id}>{row.id}: {row.name}</div>) }
+      <div className='row'>
+        <textarea placeholder='Raw SQL' value={q} onChange={(ev) => setQ(ev.target.value)} cols={60} rows={3} />
+        <button onClick={query}>Execute Query (See console for result)</button>
+      </div>
     </>
   )
 }
